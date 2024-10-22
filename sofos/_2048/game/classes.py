@@ -3,36 +3,26 @@ import random
 
 class Tile:
 
-    _value = 0
-    _has_merged = False
+    def __init__(self, power=0):
+        self.power = power
+        self.has_merged = False
 
-    def __init__(self, tile_value):
-        self._value = tile_value
+    @property
+    def value(self):
+        return 2**self.power
 
     def __repr__(self):
-        return f"Tile({self._value})"
+        return f"Tile({self.power})"
 
-    def set_value(self, value):
-        self._value = value
-
-    def inc_value(self):
-        self._value = self._value + 1
-        self._has_merged = True
-
-    def has_merged(self):
-        return self._has_merged
+    def increment_power(self):
+        self.power = self.power + 1
+        self.has_merged = True
 
     def reset_merged(self):
-        self._has_merged = False
-
-    def get_value(self):
-        return self._value
-
-    def get_tile_value(self):
-        return 2**self._value
+        self.has_merged = False
 
     def __str__(self):
-        v = self._value
+        v = self.power
         return f"{v:x}"
 
 
@@ -147,13 +137,11 @@ class Board:
                 self.grid[y][x] = None
                 moved = True
             else:
-                if (
-                    not tile2.has_merged()
-                ) and tile2.get_value() == tile1.get_value():
+                if not tile2.has_merged and tile2.power == tile1.power:
                     self.grid[y - 1][x] = tile1
                     self.grid[y][x] = None
-                    tile1.inc_value()
-                    self.score += tile1.get_tile_value()
+                    tile1.increment_power()
+                    self.score += tile1.value
                     self.merge_count += 1
                     moved = True
             if moved:
@@ -175,13 +163,11 @@ class Board:
                 self.grid[y][x] = None
                 moved = True
             else:
-                if (
-                    not tile2.has_merged()
-                ) and tile2.get_value() == tile1.get_value():
+                if not tile2.has_merged and tile2.power == tile1.power:
                     self.grid[y][x - 1] = tile1
                     self.grid[y][x] = None
-                    tile1.inc_value()
-                    self.score += tile1.get_tile_value()
+                    tile1.increment_power()
+                    self.score += tile1.value
                     self.merge_count += 1
                     moved = True
             if moved:
@@ -203,13 +189,11 @@ class Board:
                 self.grid[y][x] = None
                 moved = True
             else:
-                if (
-                    not tile2.has_merged()
-                ) and tile2.get_value() == tile1.get_value():
+                if not tile2.merged and tile2.power == tile1.power:
                     self.grid[y][x + 1] = tile1
                     self.grid[y][x] = None
-                    tile1.inc_value()
-                    self.score += tile1.get_tile_value()
+                    tile1.increment_power()
+                    self.score += tile1.value
                     self.merge_count += 1
                     moved = True
             if moved:
@@ -231,13 +215,11 @@ class Board:
                 self.grid[y][x] = None
                 moved = True
             else:
-                if (
-                    not tile2.has_merged()
-                ) and tile2.get_value() == tile1.get_value():
+                if not tile2.has_merged and tile2.power == tile1.power:
                     self.grid[y + 1][x] = tile1
                     self.grid[y][x] = None
-                    tile1.inc_value()
-                    self.score += tile1.get_tile_value()
+                    tile1.increment_power()
+                    self.score += tile1.value
                     self.merge_count += 1
                     moved = True
             if moved:
@@ -341,7 +323,7 @@ class Board:
                 if tile is None:
                     board_string = board_string + (" " * cell_padding) + "|"
                 else:
-                    tile_value = tile.get_tile_value()
+                    tile_value = tile.value
                     board_string = (
                         board_string
                         + str(
@@ -380,7 +362,7 @@ class Board:
         for row_idx, row in enumerate(self.grid):
             for tile_idx, tile in enumerate(row):
                 if tile is not None:
-                    tile_value = tile.get_tile_value()
+                    tile_value = tile.value
                     if tile_value > max_tile_value:
                         max_tile_value = tile_value
                         max_row_idx = row_idx
@@ -395,6 +377,6 @@ class Board:
                 if element is None:
                     new_row.append(None)
                 else:
-                    new_row.append(element.get_value())
+                    new_row.append(element.value)
             grid.append(new_row)
         return grid

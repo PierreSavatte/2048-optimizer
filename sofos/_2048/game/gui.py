@@ -131,7 +131,7 @@ class Game:
             row_of_tiles = []
             for column in range(0, NUMBER_OF_COLUMNS):
                 if grid[column][row]:
-                    row_of_tiles.append(grid[column][row].get_value())
+                    row_of_tiles.append(grid[column][row].power)
                 else:
                     row_of_tiles.append(None)
             tile_values.append(row_of_tiles)
