@@ -8,6 +8,14 @@ class Move(enum.Enum):
     LEFT = "LEFT"
     RIGHT = "RIGHT"
 
+    def get_vector(self) -> tuple[int, int]:
+        return {
+            "UP": (0, -1),
+            "RIGHT": (1, 0),
+            "DOWN": (0, 1),
+            "LEFT": (-1, 0),
+        }[self.value]
+
 
 class Tile:
 
@@ -35,6 +43,8 @@ class Tile:
 
 
 class Board:
+
+    size = 4
 
     def __init__(
         self, initial_state=None, initial_score=0, initial_merge_count=0
@@ -76,6 +86,9 @@ class Board:
         return_string = self.print_metrics() + "\n"
         return_string = return_string + self.print_board()
         return return_string
+
+    def is_within_bounds(self, x: int, y: int) -> bool:
+        return 0 <= x < self.size and 0 <= y < self.size
 
     def add_random_tiles(self, n):
         if self.is_board_full():
@@ -317,6 +330,29 @@ class Board:
                 if tile is None:
                     return False
         return True
+
+    def some_matches_are_available(self):
+        this = self
+
+        for x in range(len(self.grid)):
+            for y in range(len(self.grid[0])):
+                tile = self.grid[x][y]
+
+                if tile:
+                    for move in Move:
+                        vector = move.get_vector()
+                        new_x, new_y = (x + vector[0], y + vector[1])
+                        if not self.is_within_bounds(new_x, new_y):
+                            continue
+
+                        other = this.grid[new_x][new_y]
+                        if other and other.power == tile.power:
+                            return True  # These two tiles can be merged
+
+        return False
+
+    def is_game_over(self):
+        return self.is_board_full() and not self.some_matches_are_available()
 
     def print_board(self):
         """Create a user-friendly view of the Board."""

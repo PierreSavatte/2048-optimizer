@@ -186,6 +186,10 @@ def main():
                             game.draw_tiles()
                             pygame.display.flip()
 
+                        if board.is_game_over():
+                            running = False
+                            break
+
             # Did the user click the window close button? If so, stop the loop.
             elif event.type == QUIT:
                 running = False

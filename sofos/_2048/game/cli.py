@@ -41,6 +41,10 @@ def main():
             f"Move status:{move_result}"
         )
         print(board)
+
+        if board.is_game_over():
+            break
+
         key = getchar()
 
         if key == b"q" or key == "q":
@@ -62,6 +66,8 @@ def main():
             if move_result:
                 board.add_random_tiles(1)
                 move_counter = move_counter + 1
+
+    print("You lost the game, no more available move")
 
 
 if __name__ == "__main__":
