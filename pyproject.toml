@@ -8,8 +8,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 torch = [
-    { version = "^2.5.0", markers  = "sys_platform != 'win32'" },
-    { version = "^2.5.0", source = "windows-cuda-pytorch", markers  = "sys_platform == 'win32'" }
+    { version = "^2.5.0", source = "windows-cuda-pytorch", markers  = "sys_platform == 'win32'" },
+    { version = "^2.5.0", source = "pypi", markers  = "sys_platform != 'win32'" },
     ]
 gymnasium = "^1.0.0"
 matplotlib = "^3.9.2"
