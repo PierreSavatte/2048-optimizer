@@ -76,8 +76,8 @@ class Board:
             x = random.randint(0, 3)
             y = random.randint(0, 3)
             if self.is_empty(x, y):
-                p = random.randint(1, 5)
-                if p == 1:
+                p = random.randint(1, 10)
+                if p == 1:  # == 10%
                     tile = Tile(2)
                 else:
                     tile = Tile(1)
