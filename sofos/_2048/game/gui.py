@@ -9,7 +9,7 @@ from pygame.locals import (
     QUIT,
 )
 
-from sofos._2048.game.classes import Board
+from sofos._2048.game.classes import Board, Move
 
 # Colours
 TEXT_DARK = pygame.Color(119, 110, 100)
@@ -167,13 +167,13 @@ def main():
                     running = False
                 else:
                     if event.key == K_UP:
-                        move = "UP"
+                        move = Move.UP
                     elif event.key == K_LEFT:
-                        move = "LEFT"
+                        move = Move.LEFT
                     elif event.key == K_DOWN:
-                        move = "DOWN"
+                        move = Move.DOWN
                     elif event.key == K_RIGHT:
-                        move = "RIGHT"
+                        move = Move.RIGHT
                     else:
                         move = None
 

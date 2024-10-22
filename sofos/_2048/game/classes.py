@@ -1,4 +1,12 @@
+import enum
 import random
+
+
+class Move(enum.Enum):
+    UP = "UP"
+    DOWN = "DOWN"
+    LEFT = "LEFT"
+    RIGHT = "RIGHT"
 
 
 class Tile:
@@ -85,15 +93,15 @@ class Board:
                 n = n - 1
         return True
 
-    def make_move(self, move):
+    def make_move(self, move: Move):
         self.reset_tile_merges()
-        if move == "UP":
+        if move == Move.UP:
             return self.__go_up()
-        if move == "DOWN":
+        if move == Move.DOWN:
             return self.__go_down()
-        if move == "LEFT":
+        if move == Move.LEFT:
             return self.__go_left()
-        if move == "RIGHT":
+        if move == Move.RIGHT:
             return self.__go_right()
         return False
 

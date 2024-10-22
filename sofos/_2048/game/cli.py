@@ -1,4 +1,4 @@
-from sofos._2048.game.classes import Board
+from sofos._2048.game.classes import Board, Move
 
 try:
     # for Windows-based systems
@@ -47,13 +47,13 @@ def main():
             quit()
 
         if key == b"w" or key == "w":
-            move = "UP"
+            move = Move.UP
         elif key == b"a" or key == "a":
-            move = "LEFT"
+            move = Move.LEFT
         elif key == b"s" or key == "s":
-            move = "DOWN"
+            move = Move.DOWN
         elif key == b"d" or key == "d":
-            move = "RIGHT"
+            move = Move.RIGHT
         else:
             move = None
 
