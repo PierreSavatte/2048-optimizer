@@ -7,13 +7,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-torch = "^2.5.0"
+torch = [
+    { version = "^2.5.0", markers  = "sys_platform != 'win32'" },
+    { version = "^2.5.0", source = "windows-cuda-pytorch", markers  = "sys_platform == 'win32'" }
+    ]
 gymnasium = "^1.0.0"
 matplotlib = "^3.9.2"
-pyqt6 = { version = "^6.7.1", optional = true }
-
-[tool.poetry.extras]
-windows = ["pyqt6"]
+pyqt6 = { version = "^6.7.1", markers  = "sys_platform == 'win32'" }
 
 [tool.poetry.group.dev.dependencies]
 isort = "5.13.2"

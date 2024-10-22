@@ -6,19 +6,12 @@ Use of Machine Learning to maximize a score on the famous 2048 game
 
 - Install `Python 3.12`
 - Install `Poetry 1.8`
+- \[Optional] install `CUDA 12.4`
 
 ### Python environment
 
-#### Linux/Mac
-
 ```commandline
 poetry install
-```
-
-#### Windows
-
-```commandline
-poetry install --extras "windows"
 ```
 
 ### Pre-commit hooks
