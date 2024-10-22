@@ -10,7 +10,7 @@ class Tile:
         self._value = tile_value
 
     def __repr__(self):
-        return str("Tile({})".format(self._value))
+        return f"Tile({self._value})"
 
     def set_value(self, value):
         self._value = value
