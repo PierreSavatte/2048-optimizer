@@ -37,9 +37,6 @@ class Trainer:
         self.env = get_env()
         self.device = get_device()
 
-        # Enables interactive mode of matplotlib
-        plt.ion()
-
         # Get number of actions from gym action space
         n_actions = self.env.action_space.n
         # Get the number of state observations
@@ -164,6 +161,9 @@ class Trainer:
         self.optimizer.step()
 
     def run(self):
+        # Enables interactive mode of matplotlib
+        plt.ion()
+
         if torch.cuda.is_available() or torch.backends.mps.is_available():
             num_episodes = 600
         else:
