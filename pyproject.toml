@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "sofos"
+version = "0.1.0"
+description = "Use of Machine Learning to maximize a score on the famous 2048 game"
+authors = ["PierreSavatte <pierre-savatte@laposte.net>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
