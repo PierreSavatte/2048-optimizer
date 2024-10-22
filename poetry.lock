@@ -1045,7 +1045,7 @@ diagrams = ["jinja2", "railroad-diagrams"]
 name = "pyqt6"
 version = "6.7.1"
 description = "Python bindings for the Qt cross platform application toolkit"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "PyQt6-6.7.1-1-cp38-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:7f397f4b38b23b5588eb2c0933510deb953d96b1f0323a916c4839c2a66ccccc"},
@@ -1065,7 +1065,7 @@ PyQt6-sip = ">=13.8,<14"
 name = "pyqt6-qt6"
 version = "6.7.3"
 description = "The subset of a Qt installation needed by PyQt6."
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "PyQt6_Qt6-6.7.3-py3-none-macosx_10_14_x86_64.whl", hash = "sha256:f517a93b6b1a814d4aa6587adc312e812ebaf4d70415bb15cfb44268c5ad3f5f"},
@@ -1079,7 +1079,7 @@ files = [
 name = "pyqt6-sip"
 version = "13.8.0"
 description = "The sip module support for PyQt6"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "PyQt6_sip-13.8.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:cedd554c643e54c4c2e12b5874781a87441a1b405acf3650a4a2e1df42aae231"},
@@ -1252,7 +1252,10 @@ files = [
     {file = "typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8"},
 ]
 
+[extras]
+windows = ["pyqt6"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "1c2949f4ef13de83685ee9a2a684ed44c0c11278316049a189a89dce04818486"
+content-hash = "0e6062ca21f4e50b7aea3286e2a63037697c118992c61229723d2a2609154143"
