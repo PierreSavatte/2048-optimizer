@@ -1258,4 +1258,4 @@ windows = ["pyqt6"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "0e6062ca21f4e50b7aea3286e2a63037697c118992c61229723d2a2609154143"
+content-hash = "3cbb49f7b44c0ab2874f4f4383be6161be66cd8fe92e7aaec00df4dd963c5abe"
