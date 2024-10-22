@@ -197,7 +197,7 @@ class Board:
                 self.grid[y][x] = None
                 moved = True
             else:
-                if not tile2.merged and tile2.power == tile1.power:
+                if not tile2.has_merged and tile2.power == tile1.power:
                     self.grid[y][x + 1] = tile1
                     self.grid[y][x] = None
                     tile1.increment_power()
