@@ -331,6 +331,11 @@ class Board:
                     return False
         return True
 
+    def get_nb_empty_cells(self):
+        return sum(
+            1 if tile is None else 0 for row in self.grid for tile in row
+        )
+
     def some_matches_are_available(self):
         this = self
 
