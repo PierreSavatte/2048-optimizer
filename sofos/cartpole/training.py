@@ -68,7 +68,11 @@ class Trainer:
                 # t.max(1) will return the largest column value of each row.
                 # second column on max result is index of where max element was
                 # found, so we pick action with the larger expected reward.
-                return self.policy_net(state).max(1).indices.view(1, 1)
+                policy_result = self.policy_net(state)
+                largest_column_value = policy_result.max(1)
+                max_result = largest_column_value.indices
+                action = max_result.view(1, 1)
+                return action
         else:
             return torch.tensor(
                 [[self.env.action_space.sample()]],
@@ -221,6 +225,6 @@ class Trainer:
 
 
 if __name__ == "__main__":
-    trainer = Trainer(display_gym=False)
+    trainer = Trainer(display_gym=True)
 
     trainer.run()
