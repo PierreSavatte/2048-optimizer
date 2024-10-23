@@ -66,6 +66,7 @@ class Trainer:
         self.memory = ReplayMemory(10000)
 
         self.steps_done = 0
+        self.start_epoch = 0
 
         self.episode_score: list[int] = []
 
@@ -178,12 +179,26 @@ class Trainer:
         torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
         self.optimizer.step()
 
+    def load_checkpoint(self, filename: str):
+        checkpoint = torch.load(PATH_TRAINING / filename)
+
+        self.start_epoch = checkpoint["epoch"]
+        self.steps_done = checkpoint["steps_done"]
+        self.episode_score = checkpoint["episode_score"]
+        self.memory = checkpoint["memory"]
+        self.policy_net.load_state_dict(checkpoint["model_state_dict"])
+        self.target_net.load_state_dict(checkpoint["target_state_dict"])
+        self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+
     def checkpoint(self, epoch):
         average_score = mean(self.episode_score)
         ensure_path(PATH_TRAINING)
         torch.save(
             {
                 "epoch": epoch,
+                "steps_done": self.steps_done,
+                "episode_score": self.episode_score,
+                "memory": self.memory,
                 "model_state_dict": self.policy_net.state_dict(),
                 "target_state_dict": self.target_net.state_dict(),
                 "optimizer_state_dict": self.optimizer.state_dict(),
@@ -209,7 +224,7 @@ class Trainer:
 
         i_episode = 0
         try:
-            for i_episode in range(num_episodes):
+            for i_episode in range(self.start_epoch, num_episodes):
                 # Initialize the environment and get its state
                 state = self.env.reset()
                 while True:
@@ -245,7 +260,7 @@ class Trainer:
                         self.episode_score.append(score)
                         self.plot_durations()
                         break
-                if i_episode % 1_000:
+                if i_episode % 1_000 == 0:
                     self.checkpoint(epoch=i_episode)
         finally:
             self.checkpoint(epoch=i_episode)
@@ -258,5 +273,7 @@ class Trainer:
 
 if __name__ == "__main__":
     trainer = Trainer(display_gym=True)
+
+    # trainer.load_checkpoint("my_file")
 
     trainer.run()
