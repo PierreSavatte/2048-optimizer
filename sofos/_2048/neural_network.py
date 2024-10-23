@@ -13,7 +13,7 @@ class DQN(ABC, nn.Module):
 class DQNv1(DQN):
 
     def __init__(self, n_observations: int, n_actions: int):
-        super(DQNv1, self).__init__()
+        super().__init__()
         self.input = nn.Linear(n_observations, 128)
         self.layer2 = nn.Linear(128, 128)
         self.output = nn.Linear(128, n_actions)
@@ -29,7 +29,7 @@ class DQNv1(DQN):
 class DQNv2(DQN):
 
     def __init__(self, n_observations: int, n_actions: int):
-        super(DQNv2, self).__init__()
+        super().__init__()
         self.input = nn.Conv2d(in_channels=1, out_channels=128, kernel_size=2)
         self.layer2 = nn.Conv2d(
             in_channels=128, out_channels=128, kernel_size=3
