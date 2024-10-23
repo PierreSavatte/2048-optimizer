@@ -120,6 +120,48 @@ class Environment(gymnasium.Env):
         # Reset ready for a game
         self.reset()
 
+    @staticmethod
+    def compute_positioning_score(
+        tiles_position_map: dict[int, list[tuple[int, int]]]
+    ) -> int:
+        interesting_keys = sorted(set(tiles_position_map.keys()) - {1, 2})
+        if not interesting_keys:
+            return 10
+        # Only keep the two largest tile sizes
+        interesting_keys = interesting_keys[:2]
+
+        score = 0
+        for tile_power in interesting_keys:
+            for tile_position in tiles_position_map[tile_power]:
+                x, y = tile_position
+                if (x == 0 or x == 3) and (y == 0 or y == 3):
+                    # If the AI placed the largest tiles in the border
+                    score += 10
+                else:
+                    score -= 5
+
+        return score
+
+    @staticmethod
+    def compute_duplicated_large_tile_score(
+        tiles_position_map: dict[int, list[tuple[int, int]]]
+    ):
+        interesting_keys = sorted(set(tiles_position_map.keys()) - {1, 2})
+        if not interesting_keys:
+            return 10
+        # Only keep the two largest tile sizes
+        interesting_keys = interesting_keys[:2]
+
+        score = 0
+        for tile_power in interesting_keys:
+            number_of_same_tiles = len(tiles_position_map[tile_power])
+            if number_of_same_tiles > 1:
+                score -= number_of_same_tiles * 5
+            else:
+                score += 10
+
+        return score
+
     def step(self, action: Tensor) -> tuple[Tensor, Tensor, Tensor, dict]:
         # Extract value from tensor
         action = action.item()
@@ -137,12 +179,15 @@ class Environment(gymnasium.Env):
         move_result = self.board.make_move(move)
 
         if move_result:
-            self.board.add_random_tiles(1)
+            tiles_position_map = self.board.get_tiles_position_map()
             reward = (
                 (self.board.score - self.previous_score)
                 + (self.board.merge_count - self.previous_merge_count) * 10
                 + (self.board.get_nb_empty_cells()) * 10
+                + self.compute_positioning_score(tiles_position_map)
+                + self.compute_duplicated_large_tile_score(tiles_position_map)
             )
+            self.board.add_random_tiles(1)
             done = self.board.is_game_over()
             if done:
                 reward = self.illegal_move_reward

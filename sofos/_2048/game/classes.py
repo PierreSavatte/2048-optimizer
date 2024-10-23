@@ -1,5 +1,6 @@
 import enum
 import random
+from collections import defaultdict
 
 
 class Move(enum.Enum):
@@ -335,6 +336,14 @@ class Board:
         return sum(
             1 if tile is None else 0 for row in self.grid for tile in row
         )
+
+    def get_tiles_position_map(self):
+        tile_position_map = defaultdict(list)
+        for x, row in enumerate(self.grid):
+            for y, tile in enumerate(row):
+                if tile:
+                    tile_position_map[tile.power].append((x, y))
+        return tile_position_map
 
     def some_matches_are_available(self):
         this = self
