@@ -134,7 +134,7 @@ class Environment(gymnasium.Env):
         for tile_power in interesting_keys:
             for tile_position in tiles_position_map[tile_power]:
                 x, y = tile_position
-                if (x == 0 or x == 3) and (y == 0 or y == 3):
+                if (x == 0 or x == 3) or (y == 0 or y == 3):
                     # If the AI placed the largest tiles in the border
                     score += 10
                 else:
