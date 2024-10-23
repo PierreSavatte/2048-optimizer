@@ -29,6 +29,8 @@ LR = 1e-4
 
 OFFICIAL_EVALUATIONS_DURATION = 100
 
+os.environ["SDL_VIDEO_WINDOW_POS"] = "%d,%d" % (800, 100)
+
 
 class Trainer:
 
@@ -166,6 +168,8 @@ class Trainer:
     def run(self):
         # Enables interactive mode of matplotlib
         plt.ion()
+        mngr = plt.get_current_fig_manager()
+        mngr.window.setGeometry(50, 100, 640, 545)
 
         if torch.cuda.is_available() or torch.backends.mps.is_available():
             num_episodes = 600
