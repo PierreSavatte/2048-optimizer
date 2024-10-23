@@ -93,6 +93,7 @@ class Environment(gymnasium.Env):
         self.board: ObservableBoard = BoardClass.get_initial_board(
             device=device
         )
+        self.previous_merge_count: int = 0
         self.previous_score: int = 0
         self.board_size = self.board.size
 
@@ -137,15 +138,21 @@ class Environment(gymnasium.Env):
 
         if move_result:
             self.board.add_random_tiles(1)
-
-            reward = self.previous_score - self.board.score
+            reward = (
+                (self.board.score - self.previous_score)
+                + (self.board.merge_count - self.previous_merge_count) * 10
+                + (self.board.get_nb_empty_cells()) * 10
+            )
             done = self.board.is_game_over()
             if done:
                 reward = self.illegal_move_reward
         else:
             reward = self.illegal_move_reward
             info["illegal_move"] = True
-            done = True
+            done = False
+
+        self.previous_score = self.board.score
+        self.previous_merge_count = self.board.merge_count
 
         info["score"] = self.board.score
 
@@ -170,6 +177,7 @@ class Environment(gymnasium.Env):
         self.seed(seed)
         self.board = self.BoardClass.get_initial_board(device=self.device)
         self.previous_score = 0
+        self.previous_merge_count = 0
         return self.board.observe()
 
     def seed(self, seed: Optional[int] = None):
