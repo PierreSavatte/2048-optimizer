@@ -178,56 +178,8 @@ class Trainer:
         torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
         self.optimizer.step()
 
-    def run(self):
-        # Enables interactive mode of matplotlib
-        plt.ion()
-        mngr = plt.get_current_fig_manager()
-        mngr.window.setGeometry(50, 100, 640, 545)
-
-        if torch.cuda.is_available() or torch.backends.mps.is_available():
-            num_episodes = 100
-        else:
-            num_episodes = 50
-
-        i_episode = 0
-        for i_episode in range(num_episodes):
-            # Initialize the environment and get its state
-            state = self.env.reset()
-            while True:
-                action = self.select_action(state)
-                next_state, reward, done, info = self.env.step(action)
-
-                score = info["score"]
-
-                if done:
-                    next_state = None
-
-                # Store the transition in memory
-                self.memory.push(state, action, next_state, reward)
-
-                # Move to the next state
-                state = next_state
-
-                # Perform one step of the optimization (on the policy network)
-                self.optimize_model()
-
-                # Soft update of the target network's weights
-                # θ′ ← τ θ + (1 −τ)θ′
-                target_net_state_dict = self.target_net.state_dict()
-                policy_net_state_dict = self.policy_net.state_dict()
-                for key in policy_net_state_dict:
-                    target_net_state_dict[key] = policy_net_state_dict[
-                        key
-                    ] * TAU + target_net_state_dict[key] * (1 - TAU)
-                self.target_net.load_state_dict(target_net_state_dict)
-
-                if done:
-                    self.episode_score.append(score)
-                    self.plot_durations()
-                    break
-
+    def checkpoint(self, epoch):
         average_score = mean(self.episode_score)
-        epoch = i_episode
         ensure_path(PATH_TRAINING)
         torch.save(
             {
@@ -243,6 +195,60 @@ class Trainer:
             self.policy_net.state_dict(),
             PATH_TRAINING / f"policy_network_{average_score}.pt",
         )
+
+    def run(self):
+        # Enables interactive mode of matplotlib
+        plt.ion()
+        mngr = plt.get_current_fig_manager()
+        mngr.window.setGeometry(50, 100, 640, 545)
+
+        if torch.cuda.is_available() or torch.backends.mps.is_available():
+            num_episodes = 100
+        else:
+            num_episodes = 50
+
+        i_episode = 0
+        try:
+            for i_episode in range(num_episodes):
+                # Initialize the environment and get its state
+                state = self.env.reset()
+                while True:
+                    action = self.select_action(state)
+                    next_state, reward, done, info = self.env.step(action)
+
+                    score = info["score"]
+
+                    if done:
+                        next_state = None
+
+                    # Store the transition in memory
+                    self.memory.push(state, action, next_state, reward)
+
+                    # Move to the next state
+                    state = next_state
+
+                    # Perform one step of the optimization
+                    # (on the policy network)
+                    self.optimize_model()
+
+                    # Soft update of the target network's weights
+                    # θ′ ← τ θ + (1 −τ)θ′
+                    target_net_state_dict = self.target_net.state_dict()
+                    policy_net_state_dict = self.policy_net.state_dict()
+                    for key in policy_net_state_dict:
+                        target_net_state_dict[key] = policy_net_state_dict[
+                            key
+                        ] * TAU + target_net_state_dict[key] * (1 - TAU)
+                    self.target_net.load_state_dict(target_net_state_dict)
+
+                    if done:
+                        self.episode_score.append(score)
+                        self.plot_durations()
+                        break
+                if i_episode % 1_000:
+                    self.checkpoint(epoch=i_episode)
+        finally:
+            self.checkpoint(epoch=i_episode)
 
         print("Complete")
         self.plot_durations(show_result=True)
