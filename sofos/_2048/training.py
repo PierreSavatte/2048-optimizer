@@ -45,7 +45,9 @@ def ensure_path(path):
 
 class Trainer:
 
-    def __init__(self, display_gym: bool = False):
+    def __init__(
+        self, display_gym: bool = False, save_checkpoints: bool = True
+    ):
         self.device = get_device()
         self.env = get_env(device=self.device, display_game=display_gym)
 
@@ -64,6 +66,8 @@ class Trainer:
             self.policy_net.parameters(), lr=LR, amsgrad=True
         )
         self.memory = ReplayMemory(10000)
+
+        self.save_checkpoints = save_checkpoints
 
         self.steps_done = 0
         self.start_epoch = 0
@@ -191,6 +195,9 @@ class Trainer:
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
 
     def checkpoint(self, epoch):
+        if not self.save_checkpoints:
+            return
+
         average_score = mean(self.episode_score)
         ensure_path(PATH_TRAINING)
         torch.save(
