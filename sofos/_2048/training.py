@@ -2,6 +2,7 @@ import math
 import os
 import pathlib
 import random
+import re
 from statistics import mean
 
 import matplotlib.pyplot as plt
@@ -9,8 +10,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from sofos._2048 import get_env
-from sofos._2048.neural_network import DQN
+from sofos._2048 import get_env, get_model
 from sofos.device import get_device
 from sofos.replay_memory import ReplayMemory, Transition
 
@@ -43,13 +43,27 @@ def ensure_path(path):
         os.makedirs(path)
 
 
+def extract_model_version_from_filename(filename: str) -> int:
+    match = re.search(r"training_save_v(\d+)_", filename)
+    if match:
+        return int(match.group(1))
+    else:
+        raise RuntimeError(f"Cannot find the version number in {filename=}.")
+
+
 class Trainer:
 
     def __init__(
-        self, display_gym: bool = False, save_checkpoints: bool = True
+        self,
+        version: int,
+        display_gym: bool = False,
+        save_checkpoints: bool = True,
     ):
+        self.version = version
         self.device = get_device()
-        self.env = get_env(device=self.device, display_game=display_gym)
+        self.env = get_env(
+            version=version, device=self.device, display_game=display_gym
+        )
 
         # Get number of actions from gym action space
         n_actions = self.env.action_space.n
@@ -57,9 +71,10 @@ class Trainer:
         grid_shape = self.env.observation_space.shape
         n_observations = grid_shape[0] * grid_shape[1]
 
-        self.policy_net = DQN(n_observations, n_actions).to(self.device)
+        ModelClass = get_model(version)
+        self.policy_net = ModelClass(n_observations, n_actions).to(self.device)
 
-        self.target_net = DQN(n_observations, n_actions).to(self.device)
+        self.target_net = ModelClass(n_observations, n_actions).to(self.device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
 
         self.optimizer = optim.AdamW(
@@ -186,6 +201,13 @@ class Trainer:
     def load_checkpoint(self, filename: str):
         checkpoint = torch.load(PATH_TRAINING / filename)
 
+        version = extract_model_version_from_filename(filename)
+        if version != self.version:
+            raise RuntimeError(
+                "The version of the file you're trying to load does not match "
+                "with the current version configured in the Trainer."
+            )
+
         self.start_epoch = checkpoint["epoch"]
         self.steps_done = checkpoint["steps_done"]
         self.episode_score = checkpoint["episode_score"]
@@ -210,12 +232,14 @@ class Trainer:
                 "target_state_dict": self.target_net.state_dict(),
                 "optimizer_state_dict": self.optimizer.state_dict(),
             },
-            PATH_TRAINING / f"training_save_{epoch}_{average_score}.pt",
+            PATH_TRAINING
+            / f"training_save_v{self.version}_{epoch}_{average_score}.pt",
         )
 
         torch.save(
             self.policy_net.state_dict(),
-            PATH_TRAINING / f"policy_network_{average_score}.pt",
+            PATH_TRAINING
+            / f"policy_network_v{self.version}_{epoch}_{average_score}.pt",
         )
 
     def run(self):
@@ -279,7 +303,7 @@ class Trainer:
 
 
 if __name__ == "__main__":
-    trainer = Trainer(display_gym=True)
+    trainer = Trainer(version=2, display_gym=True)
 
     # trainer.load_checkpoint("my_file")
 

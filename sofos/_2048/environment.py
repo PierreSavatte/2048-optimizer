@@ -1,5 +1,6 @@
 import math
 import random
+from abc import ABC, abstractmethod
 from typing import Optional
 
 import gymnasium
@@ -24,7 +25,7 @@ def get_move_from_model(value: int) -> Move:
     return MODEL_MOVE_MAP[value]
 
 
-class ObservableBoard(Board):
+class ObservableBoard(ABC, Board):
 
     def __init__(self, *args, device: str, **kwargs):
         super().__init__(*args, **kwargs)
@@ -36,6 +37,12 @@ class ObservableBoard(Board):
         board = cls(device=device)
         board.add_random_tiles(2)
         return board
+
+    @abstractmethod
+    def observe(self) -> Tensor: ...
+
+
+class ObservableBoardV1(ObservableBoard):
 
     def observe(self) -> Tensor:
         observed_grid = torch.tensor(
@@ -49,17 +56,41 @@ class ObservableBoard(Board):
             device=self.device,
             dtype=torch.float,
         )
-        return observed_grid
+        return observed_grid.unsqueeze(0).unsqueeze(0)
+
+
+class ObservableBoardV2(ObservableBoard):
+
+    def observe(self) -> Tensor:
+        observed_grid = torch.tensor(
+            [
+                [0 if tile is None else tile.power for tile in line]
+                for line in self.grid
+            ],
+            device=self.device,
+            dtype=torch.float,
+        )
+        return observed_grid.unsqueeze(0).unsqueeze(0)
 
 
 class Environment(gymnasium.Env):
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, device: str, render_mode: Optional[str] = None):
+    def __init__(
+        self,
+        version: int,
+        device: str,
+        render_mode: Optional[str] = None,
+    ):
+        from sofos._2048 import get_env_board
+
+        BoardClass = get_env_board(version)
+
         self.device = device
 
         # Initialise internal variables
-        self.board: ObservableBoard = ObservableBoard.get_initial_board(
+        self.BoardClass = BoardClass
+        self.board: ObservableBoard = BoardClass.get_initial_board(
             device=device
         )
         self.previous_score: int = 0
@@ -137,7 +168,7 @@ class Environment(gymnasium.Env):
 
     def reset(self, seed: Optional[int] = None, **kwargs) -> Tensor:
         self.seed(seed)
-        self.board = ObservableBoard.get_initial_board(device=self.device)
+        self.board = self.BoardClass.get_initial_board(device=self.device)
         self.previous_score = 0
         return self.board.observe()
 
