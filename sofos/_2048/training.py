@@ -1,6 +1,8 @@
 import math
 import os
+import pathlib
 import random
+from statistics import mean
 
 import matplotlib.pyplot as plt
 import torch
@@ -31,6 +33,14 @@ LR = 1e-4
 OFFICIAL_EVALUATIONS_DURATION = 100
 
 os.environ["SDL_VIDEO_WINDOW_POS"] = "%d,%d" % (800, 100)
+
+CURRENT_PATH = pathlib.Path(__file__).parent.resolve()
+PATH_TRAINING = CURRENT_PATH / "training_saves"
+
+
+def ensure_path(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 
 class Trainer:
@@ -175,10 +185,11 @@ class Trainer:
         mngr.window.setGeometry(50, 100, 640, 545)
 
         if torch.cuda.is_available() or torch.backends.mps.is_available():
-            num_episodes = 100_000
+            num_episodes = 100
         else:
             num_episodes = 50
 
+        i_episode = 0
         for i_episode in range(num_episodes):
             # Initialize the environment and get its state
             state = self.env.reset()
@@ -214,6 +225,24 @@ class Trainer:
                     self.episode_score.append(score)
                     self.plot_durations()
                     break
+
+        average_score = mean(self.episode_score)
+        epoch = i_episode
+        ensure_path(PATH_TRAINING)
+        torch.save(
+            {
+                "epoch": epoch,
+                "model_state_dict": self.policy_net.state_dict(),
+                "target_state_dict": self.target_net.state_dict(),
+                "optimizer_state_dict": self.optimizer.state_dict(),
+            },
+            PATH_TRAINING / f"training_save_{epoch}_{average_score}.pt",
+        )
+
+        torch.save(
+            self.policy_net.state_dict(),
+            PATH_TRAINING / f"policy_network_{average_score}.pt",
+        )
 
         print("Complete")
         self.plot_durations(show_result=True)
