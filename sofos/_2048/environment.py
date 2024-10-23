@@ -1,3 +1,4 @@
+import math
 import random
 from typing import Optional
 
@@ -75,7 +76,7 @@ class Environment(gymnasium.Env):
         self.observation_space = spaces.Box(
             0, 1, (self.board_size, self.board_size), dtype=np.integer
         )
-        self.illegal_move_reward = -1
+        self.illegal_move_reward = -math.inf
         self.reward_range = (
             self.illegal_move_reward,
             65_536,  # I'd be happy to have a 65_536 tile already!
@@ -108,6 +109,8 @@ class Environment(gymnasium.Env):
 
             reward = self.previous_score - self.board.score
             done = self.board.is_game_over()
+            if done:
+                reward = self.illegal_move_reward
         else:
             reward = self.illegal_move_reward
             info["illegal_move"] = True
