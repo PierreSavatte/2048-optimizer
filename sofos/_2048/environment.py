@@ -195,7 +195,7 @@ class Environment(gymnasium.Env):
         else:
             reward = self.illegal_move_reward
             info["illegal_move"] = True
-            done = False
+            done = True
 
         self.previous_score = self.board.score
         self.previous_merge_count = self.board.merge_count
