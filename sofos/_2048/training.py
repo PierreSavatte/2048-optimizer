@@ -1,4 +1,5 @@
 import math
+import os
 import random
 
 import matplotlib.pyplot as plt
@@ -83,28 +84,30 @@ class Trainer:
 
     def plot_durations(self, show_result=False):
         plt.figure(1)
-        durations_t = torch.tensor(self.episode_score, dtype=torch.float)
+        scores_t = torch.tensor(self.episode_score, dtype=torch.float)
         if show_result:
             plt.title("Result")
         else:
             plt.clf()
             plt.title("Training...")
         plt.xlabel("Episode")
-        plt.ylabel("Score")
-        plt.plot(durations_t.numpy())
+        plt.plot(scores_t.numpy(), label="Score")
         # Take 100 episode averages and plot them too
-        if len(durations_t) >= OFFICIAL_EVALUATIONS_DURATION:
-            means = (
-                durations_t.unfold(0, OFFICIAL_EVALUATIONS_DURATION, 1)
-                .mean(1)
-                .view(-1)
+        if len(scores_t) >= OFFICIAL_EVALUATIONS_DURATION:
+            scores_means = torch.cat(
+                (
+                    torch.zeros(OFFICIAL_EVALUATIONS_DURATION - 1),
+                    (
+                        scores_t.unfold(0, OFFICIAL_EVALUATIONS_DURATION, 1)
+                        .mean(1)
+                        .view(-1)
+                    ),
+                )
             )
-            means = torch.cat(
-                (torch.zeros(OFFICIAL_EVALUATIONS_DURATION - 1), means)
-            )
-            plt.plot(means.numpy())
+            plt.plot(scores_means.numpy(), label="Mean of scores (last 100)")
 
-        plt.pause(0.001)  # pause a bit so that plots are updated
+        plt.legend(loc="upper left")
+        plt.pause(0.1)  # pause a bit so that plots are updated
 
     def optimize_model(self):
         if len(self.memory) < BATCH_SIZE:
