@@ -1,6 +1,5 @@
 import math
 import random
-from itertools import count
 
 import matplotlib.pyplot as plt
 import torch
@@ -55,7 +54,7 @@ class Trainer:
 
         self.steps_done = 0
 
-        self.episode_durations: list[int] = []
+        self.episode_score: list[int] = []
 
     def select_action(self, state: torch.tensor) -> torch.tensor:
         sample = random.random()
@@ -82,14 +81,14 @@ class Trainer:
 
     def plot_durations(self, show_result=False):
         plt.figure(1)
-        durations_t = torch.tensor(self.episode_durations, dtype=torch.float)
+        durations_t = torch.tensor(self.episode_score, dtype=torch.float)
         if show_result:
             plt.title("Result")
         else:
             plt.clf()
             plt.title("Training...")
         plt.xlabel("Episode")
-        plt.ylabel("Duration")
+        plt.ylabel("Score")
         plt.plot(durations_t.numpy())
         # Take 100 episode averages and plot them too
         if len(durations_t) >= OFFICIAL_EVALUATIONS_DURATION:
@@ -176,9 +175,11 @@ class Trainer:
         for i_episode in range(num_episodes):
             # Initialize the environment and get its state
             state = self.env.reset()
-            for t in count():
+            while True:
                 action = self.select_action(state)
                 next_state, reward, done, info = self.env.step(action)
+
+                score = info["score"]
 
                 if done:
                     next_state = None
@@ -203,7 +204,7 @@ class Trainer:
                 self.target_net.load_state_dict(target_net_state_dict)
 
                 if done:
-                    self.episode_durations.append(t + 1)
+                    self.episode_score.append(score)
                     self.plot_durations()
                     break
 
@@ -214,6 +215,6 @@ class Trainer:
 
 
 if __name__ == "__main__":
-    trainer = Trainer(display_gym=False)
+    trainer = Trainer(display_gym=True)
 
     trainer.run()

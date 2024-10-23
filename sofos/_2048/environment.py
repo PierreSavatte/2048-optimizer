@@ -113,6 +113,8 @@ class Environment(gymnasium.Env):
             info["illegal_move"] = True
             done = True
 
+        info["score"] = self.board.score
+
         self.render()
 
         return (
