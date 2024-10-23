@@ -33,8 +33,8 @@ OFFICIAL_EVALUATIONS_DURATION = 100
 
 class Trainer:
 
-    def __init__(self):
-        self.env = get_env()
+    def __init__(self, display_gym: bool = False):
+        self.env = get_env(display_game=display_gym)
         self.device = get_device()
 
         # Get number of actions from gym action space
@@ -55,7 +55,7 @@ class Trainer:
 
         self.steps_done = 0
 
-        self.episode_durations = []
+        self.episode_durations: list[int] = []
 
     def select_action(self, state):
         sample = random.random()
@@ -221,6 +221,6 @@ class Trainer:
 
 
 if __name__ == "__main__":
-    trainer = Trainer()
+    trainer = Trainer(display_gym=False)
 
     trainer.run()
