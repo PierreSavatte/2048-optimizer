@@ -203,7 +203,7 @@ class Trainer:
         mngr.window.setGeometry(50, 100, 640, 545)
 
         if torch.cuda.is_available() or torch.backends.mps.is_available():
-            num_episodes = 100
+            num_episodes = 1_000_000
         else:
             num_episodes = 50
 
