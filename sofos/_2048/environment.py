@@ -177,6 +177,7 @@ class Environment(gymnasium.Env):
         }
 
         move_result = self.board.make_move(move)
+        self.render()
 
         if move_result:
             tiles_position_map = self.board.get_tiles_position_map()
@@ -200,8 +201,6 @@ class Environment(gymnasium.Env):
         self.previous_merge_count = self.board.merge_count
 
         info["score"] = self.board.score
-
-        self.render()
 
         return (
             self.board.observe(),
