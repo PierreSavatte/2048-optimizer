@@ -56,7 +56,7 @@ class ObservableBoardV1(ObservableBoard):
             device=self.device,
             dtype=torch.float,
         )
-        return observed_grid.unsqueeze(0).unsqueeze(0)
+        return observed_grid
 
 
 class ObservableBoardV2(ObservableBoard):
