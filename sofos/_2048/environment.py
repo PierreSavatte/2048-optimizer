@@ -1,5 +1,5 @@
-import math
 import random
+import sys
 from abc import ABC, abstractmethod
 from typing import Optional
 
@@ -108,7 +108,7 @@ class Environment(gymnasium.Env):
         self.observation_space = spaces.Box(
             0, 1, (self.board_size, self.board_size), dtype=np.integer
         )
-        self.illegal_move_reward = -math.inf
+        self.illegal_move_reward = -sys.maxsize
         self.reward_range = (
             self.illegal_move_reward,
             65_536,  # I'd be happy to have a 65_536 tile already!
