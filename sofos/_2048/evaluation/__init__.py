@@ -63,7 +63,7 @@ class Evaluator:
                 next_state, reward, done, info = self.env.step(action)
 
                 if done or info.get("illegal_move"):
-                    grid = next_state.tolist()[0][0]
+                    grid = state.squeeze().tolist()
                     evaluation_list.append(
                         Evaluation(final_grid=grid, final_score=info["score"])
                     )
