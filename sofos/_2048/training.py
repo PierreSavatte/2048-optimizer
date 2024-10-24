@@ -226,8 +226,6 @@ class Trainer:
         )
 
     def run(self):
-        # Enables interactive mode of matplotlib
-        plt.ion()
         manager = plt.get_current_fig_manager()
         manager.window.setGeometry(50, 100, 640, 545)
 
@@ -281,7 +279,6 @@ class Trainer:
 
         print("Complete")
         self.plot_learning_graph(show_result=True)
-        plt.ioff()
         plt.show()
 
 
