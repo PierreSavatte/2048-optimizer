@@ -14,7 +14,8 @@ torch = [
 gymnasium = "^1.0.0"
 matplotlib = "^3.9.2"
 pygame = "^2.6.1"
-pyqt5 = "^5.15.11"
+pyqt6 = { version = "^6.7.1", markers  = "sys_platform == 'win32'" }
+pyqt5 = { version = "^5.15.11", source = "pypi", markers  = "sys_platform != 'win32'" }
 tqdm = "^4.66.5"
 
 [tool.poetry.group.dev.dependencies]

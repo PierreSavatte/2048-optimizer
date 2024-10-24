@@ -1,6 +1,7 @@
 import math
 import os
 import random
+import sys
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -36,7 +37,8 @@ LR = 1e-4
 OFFICIAL_EVALUATIONS_DURATION = 100
 
 # Ensures we can place the matplotlib window where we want
-matplotlib.use("Qt5Agg")
+if sys.platform != "win32":
+    matplotlib.use("Qt5Agg")
 # This one is to place the pygame window
 os.environ["SDL_VIDEO_WINDOW_POS"] = "%d,%d" % (800, 100)
 
@@ -282,6 +284,6 @@ class Trainer:
 if __name__ == "__main__":
     trainer = Trainer(version=2, display_gym=True, save_checkpoints=False)
 
-    trainer.load_checkpoint("training_save_v2_5000_1131.3714514194323.pt")
+    # trainer.load_checkpoint("training_save_v2_5000_1131.3714514194323.pt")
 
     trainer.run()
