@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import torch
 from tqdm import tqdm
@@ -19,11 +20,16 @@ class Evaluation:
 class Evaluator:
 
     def __init__(
-        self, policy_network_filename: str, display_gym: bool = False
+        self,
+        policy_network_filename: str,
+        sub_folder: Optional[str] = None,
+        display_gym: bool = False,
     ):
         self.device = get_device()
         policy_network_data = load_policy_network_data(
-            policy_network_filename, map_location=self.device
+            policy_network_filename,
+            sub_folder=sub_folder,
+            map_location=self.device,
         )
 
         self.version = policy_network_data.version
@@ -75,10 +81,16 @@ class Evaluator:
         return evaluation_list
 
 
-def print_model_evaluation(policy_network_filename: str, display_gym: bool):
+def print_model_evaluation(
+    policy_network_filename: str,
+    display_gym: bool,
+    sub_folder: Optional[str] = None,
+):
     from sofos._2048.evaluation.metrics import compute_metrics, display_metrics
 
-    evaluator = Evaluator(policy_network_filename, display_gym=display_gym)
+    evaluator = Evaluator(
+        policy_network_filename, sub_folder=sub_folder, display_gym=display_gym
+    )
     evaluation_list = evaluator.run()
 
     metrics = compute_metrics(evaluation_list)
@@ -87,5 +99,7 @@ def print_model_evaluation(policy_network_filename: str, display_gym: bool):
 
 if __name__ == "__main__":
     print_model_evaluation(
-        "policy_network_v2_5000_1131.3714514194323.pt", display_gym=True
+        "policy_network_v2_5000_57.65340795522686.pt",
+        sub_folder="with_stop_when_illegal_move",
+        display_gym=True,
     )

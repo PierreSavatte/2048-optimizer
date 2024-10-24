@@ -80,11 +80,16 @@ def save_checkpoint_data(version: int, checkpoint_data: CheckpointData):
 
 def load_checkpoint_data(
     filename: str,
+    sub_folder: Optional[str] = None,
     map_location: Optional[str] = None,
     expected_version: Optional[int] = None,
 ) -> CheckpointData:
+    path = PATH_TRAINING
+    if sub_folder:
+        path = path / sub_folder
+
     checkpoint = torch.load(
-        PATH_TRAINING / filename,
+        path / filename,
         map_location=map_location,
         weights_only=False,
     )
@@ -115,10 +120,16 @@ class PolicyNetworkData:
 
 
 def load_policy_network_data(
-    filename: str, map_location: str
+    filename: str,
+    map_location: str,
+    sub_folder: Optional[str] = None,
 ) -> PolicyNetworkData:
+    path = PATH_TRAINING
+    if sub_folder:
+        path = path / sub_folder
+
     model_state_dict = torch.load(
-        PATH_TRAINING / filename, map_location=map_location, weights_only=False
+        path / filename, map_location=map_location, weights_only=False
     )
     version = extract_model_version_from_policy_network_filename(filename)
 

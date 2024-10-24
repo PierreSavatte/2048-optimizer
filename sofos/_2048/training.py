@@ -2,6 +2,7 @@ import math
 import os
 import random
 import sys
+from typing import Optional
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -189,9 +190,12 @@ class Trainer:
         torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
         self.optimizer.step()
 
-    def load_checkpoint(self, filename: str):
+    def load_checkpoint(self, filename: str, sub_folder: Optional[str] = None):
         data = load_checkpoint_data(
-            filename, expected_version=self.version, map_location=self.device
+            filename,
+            sub_folder=sub_folder,
+            expected_version=self.version,
+            map_location=self.device,
         )
 
         self.start_epoch = data.current_epoch
@@ -284,6 +288,9 @@ class Trainer:
 if __name__ == "__main__":
     trainer = Trainer(version=2, display_gym=True, save_checkpoints=False)
 
-    # trainer.load_checkpoint("training_save_v2_5000_1131.3714514194323.pt")
+    trainer.load_checkpoint(
+        "training_save_v2_5000_57.65340795522686.pt",
+        sub_folder="with_stop_when_illegal_move",
+    )
 
     trainer.run()
