@@ -5,6 +5,7 @@ import random
 import re
 from statistics import mean
 
+import matplotlib
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
@@ -32,6 +33,9 @@ LR = 1e-4
 
 OFFICIAL_EVALUATIONS_DURATION = 100
 
+# Ensures we can place the matplotlib window where we want
+matplotlib.use("Qt5Agg")
+# This one is to place the pygame window
 os.environ["SDL_VIDEO_WINDOW_POS"] = "%d,%d" % (800, 100)
 
 CURRENT_PATH = pathlib.Path(__file__).parent.resolve()
@@ -248,8 +252,8 @@ class Trainer:
     def run(self):
         # Enables interactive mode of matplotlib
         plt.ion()
-        mngr = plt.get_current_fig_manager()
-        mngr.window.setGeometry(50, 100, 640, 545)
+        manager = plt.get_current_fig_manager()
+        manager.window.setGeometry(50, 100, 640, 545)
 
         if torch.cuda.is_available() or torch.backends.mps.is_available():
             num_episodes = 1_000_000
