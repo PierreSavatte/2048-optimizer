@@ -12,7 +12,7 @@ EVALUATION_DURATION = 1_000  # Number of games played
 
 @dataclass
 class Evaluation:
-    final_state: list[list[int]]
+    final_grid: list[list[int]]
     final_score: int
 
 
@@ -59,23 +59,13 @@ class Evaluator:
             state = self.env.reset()
             while True:
                 action = self.select_action(state)
+
                 next_state, reward, done, info = self.env.step(action)
 
-                score = info["score"]
-
-                done = done or info.get("illegal_move")
-                if done:
-                    next_state = None
-
-                # Move to the next state
-                state = next_state
-
-                if done:
+                if done or info.get("illegal_move"):
+                    grid = next_state.tolist()[0][0]
                     evaluation_list.append(
-                        Evaluation(
-                            final_state=state,
-                            final_score=score,
-                        )
+                        Evaluation(final_grid=grid, final_score=info["score"])
                     )
                     break
 
@@ -83,11 +73,17 @@ class Evaluator:
         return evaluation_list
 
 
-if __name__ == "__main__":
-    evaluator = Evaluator(
-        "policy_network_v2_5000_1131.3714514194323.pt", display_gym=True
-    )
+def print_model_evaluation(policy_network_filename: str, display_gym: bool):
+    from sofos._2048.evaluate.metrics import compute_metrics, display_metrics
 
+    evaluator = Evaluator(policy_network_filename, display_gym=display_gym)
     evaluation_list = evaluator.run()
 
-    print(evaluation_list)
+    metrics = compute_metrics(evaluation_list)
+    display_metrics(metrics)
+
+
+if __name__ == "__main__":
+    print_model_evaluation(
+        "policy_network_v2_5000_1131.3714514194323.pt", display_gym=True
+    )
