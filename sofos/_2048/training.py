@@ -1,9 +1,6 @@
 import math
 import os
-import pathlib
 import random
-import re
-from statistics import mean
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -12,6 +9,11 @@ import torch.nn as nn
 import torch.optim as optim
 
 from sofos._2048 import get_env, get_model
+from sofos._2048.checkpoint import (
+    CheckpointData,
+    load_checkpoint_data,
+    save_checkpoint_data,
+)
 from sofos.device import get_device
 from sofos.replay_memory import ReplayMemory, Transition
 
@@ -37,22 +39,6 @@ OFFICIAL_EVALUATIONS_DURATION = 100
 matplotlib.use("Qt5Agg")
 # This one is to place the pygame window
 os.environ["SDL_VIDEO_WINDOW_POS"] = "%d,%d" % (800, 100)
-
-CURRENT_PATH = pathlib.Path(__file__).parent.resolve()
-PATH_TRAINING = CURRENT_PATH / "training_saves"
-
-
-def ensure_path(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
-
-
-def extract_model_version_from_filename(filename: str) -> int:
-    match = re.search(r"training_save_v(\d+)_", filename)
-    if match:
-        return int(match.group(1))
-    else:
-        raise RuntimeError(f"Cannot find the version number in {filename=}.")
 
 
 class Trainer:
@@ -202,51 +188,35 @@ class Trainer:
         self.optimizer.step()
 
     def load_checkpoint(self, filename: str):
-        checkpoint = torch.load(
-            PATH_TRAINING / filename,
-            map_location=self.device,
-            weights_only=False,
+        data = load_checkpoint_data(
+            filename, expected_version=self.version, map_location=self.device
         )
 
-        version = extract_model_version_from_filename(filename)
-        if version != self.version:
-            raise RuntimeError(
-                "The version of the file you're trying to load does not match "
-                "with the current version configured in the Trainer."
-            )
+        self.start_epoch = data.current_epoch
+        self.steps_done = data.steps_done
+        self.episode_score = data.episode_score
+        self.memory = data.memory
 
-        self.start_epoch = checkpoint["epoch"]
-        self.steps_done = checkpoint["steps_done"]
-        self.episode_score = checkpoint["episode_score"]
-        self.memory = checkpoint["memory"]
-        self.policy_net.load_state_dict(checkpoint["model_state_dict"])
-        self.target_net.load_state_dict(checkpoint["target_state_dict"])
-        self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        self.policy_net.load_state_dict(data.model_state_dict)
+        self.target_net.load_state_dict(data.target_state_dict)
+        self.optimizer.load_state_dict(data.optimizer_state_dict)
 
     def checkpoint(self, epoch):
         if not self.save_checkpoints:
             return
 
-        average_score = mean(self.episode_score)
-        ensure_path(PATH_TRAINING)
-        torch.save(
-            {
-                "epoch": epoch,
-                "steps_done": self.steps_done,
-                "episode_score": self.episode_score,
-                "memory": self.memory,
-                "model_state_dict": self.policy_net.state_dict(),
-                "target_state_dict": self.target_net.state_dict(),
-                "optimizer_state_dict": self.optimizer.state_dict(),
-            },
-            PATH_TRAINING
-            / f"training_save_v{self.version}_{epoch}_{average_score}.pt",
+        checkpoint_data = CheckpointData(
+            current_epoch=epoch,
+            steps_done=self.steps_done,
+            episode_score=self.episode_score,
+            memory=self.memory,
+            model_state_dict=self.policy_net.state_dict(),
+            target_state_dict=self.target_net.state_dict(),
+            optimizer_state_dict=self.optimizer.state_dict(),
         )
 
-        torch.save(
-            self.policy_net.state_dict(),
-            PATH_TRAINING
-            / f"policy_network_v{self.version}_{epoch}_{average_score}.pt",
+        save_checkpoint_data(
+            version=self.version, checkpoint_data=checkpoint_data
         )
 
     def run(self):
@@ -310,8 +280,8 @@ class Trainer:
 
 
 if __name__ == "__main__":
-    trainer = Trainer(version=2, display_gym=True, save_checkpoints=True)
+    trainer = Trainer(version=2, display_gym=True, save_checkpoints=False)
 
-    # trainer.load_checkpoint("my_file")
+    trainer.load_checkpoint("training_save_v2_5000_1131.3714514194323.pt")
 
     trainer.run()

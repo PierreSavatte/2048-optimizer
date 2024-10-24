@@ -1,3 +1,4 @@
+import pathlib
 from typing import Type
 
 from sofos._2048.environment import (
@@ -7,6 +8,9 @@ from sofos._2048.environment import (
     ObservableBoardV2,
 )
 from sofos._2048.neural_network import DQN, DQNv1, DQNv2
+
+CURRENT_PATH = pathlib.Path(__file__).parent.resolve()
+PATH_TRAINING = CURRENT_PATH / "training_saves"
 
 VERSIONS = {
     1: {
