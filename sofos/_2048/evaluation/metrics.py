@@ -41,9 +41,7 @@ def compute_metrics(evaluations: list[Evaluation]) -> Metrics:
         for present_tile_value in present_tile_values_in_final_grid:
             present_tile_values[present_tile_value] += 1
 
-    metrics = {
-        "Number of games ended (stored in memory)": float(number_games_ended)
-    }
+    metrics = {"Number of games evaluated": float(number_games_ended)}
     for (
         tile_value,
         number_of_games_with_that_tile,
