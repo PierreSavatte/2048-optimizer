@@ -21,11 +21,14 @@ VERSIONS = {
 
 
 def get_env_board(version: int) -> Type[ObservableBoard]:
-    return VERSIONS[version]["env_board"]
+    env_board: Type[ObservableBoard]
+    env_board = VERSIONS[version]["env_board"]  # type:ignore
+    return env_board
 
 
 def get_model(version: int) -> Type[DQN]:
-    return VERSIONS[version]["model"]
+    model: Type[DQN] = VERSIONS[version]["model"]  # type:ignore
+    return model
 
 
 def get_env(version: int, device: str, display_game: bool = False):
