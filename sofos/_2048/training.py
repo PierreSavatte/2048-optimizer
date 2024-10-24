@@ -81,6 +81,7 @@ class Trainer:
         self.start_epoch = 0
 
         self.episode_score: list[int] = []
+        self.episode_illegal_move: list[bool] = []
 
     def select_action(self, state: torch.tensor) -> torch.tensor:
         sample = random.random()
@@ -129,6 +130,35 @@ class Trainer:
             )
             plt.plot(scores_means.numpy(), label="Mean of scores (last 100)")
 
+            illegal_move_t = torch.tensor(
+                self.episode_illegal_move, dtype=torch.int
+            )
+            illegal_move_percentages = torch.cat(
+                (
+                    torch.zeros(OFFICIAL_EVALUATIONS_DURATION - 1),
+                    (
+                        illegal_move_t.unfold(
+                            0, OFFICIAL_EVALUATIONS_DURATION, 1
+                        )
+                        .sum(1)
+                        .view(-1)
+                    ),
+                )
+            )
+            illegal_move_percentages = illegal_move_percentages.numpy()
+            plt.plot(
+                illegal_move_percentages,
+                label="Percentages of illegal moves (last 100)",
+            )
+
+            last_percentage = float(illegal_move_percentages[-1])
+            plt.text(
+                len(scores_t),
+                last_percentage,
+                str(last_percentage),
+                fontsize=12,
+                ha="right",
+            )
         plt.legend(loc="upper left")
         plt.pause(0.1)  # pause a bit so that plots are updated
 
@@ -269,6 +299,9 @@ class Trainer:
                     self.target_net.load_state_dict(target_net_state_dict)
 
                     if done:
+                        self.episode_illegal_move.append(
+                            info.get("illegal_move", False)
+                        )
                         self.episode_score.append(score)
                         self.plot_learning_graph()
                         break
@@ -284,10 +317,5 @@ class Trainer:
 
 if __name__ == "__main__":
     trainer = Trainer(version=2, display_gym=True, save_checkpoints=False)
-
-    trainer.load_checkpoint(
-        "training_save_v2_5000_57.65340795522686.pt",
-        sub_folder="with_stop_when_illegal_move",
-    )
 
     trainer.run()
