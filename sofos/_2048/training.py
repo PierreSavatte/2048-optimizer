@@ -245,6 +245,7 @@ class Trainer:
         self.start_epoch = data.current_epoch
         self.steps_done = data.steps_done
         self.episode_score = data.episode_score
+        self.episode_illegal_move = data.episode_illegal_move
         self.memory = data.memory
 
         self.policy_net.load_state_dict(data.model_state_dict)
@@ -259,6 +260,7 @@ class Trainer:
             current_epoch=epoch,
             steps_done=self.steps_done,
             episode_score=self.episode_score,
+            episode_illegal_move=self.episode_illegal_move,
             memory=self.memory,
             model_state_dict=self.policy_net.state_dict(),
             target_state_dict=self.target_net.state_dict(),

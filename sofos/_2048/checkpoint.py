@@ -15,6 +15,7 @@ class CheckpointData:
     current_epoch: int
     steps_done: int
     episode_score: list[int]
+    episode_illegal_move: list[bool]
     memory: ReplayMemory
     model_state_dict: dict
     target_state_dict: dict
@@ -57,6 +58,7 @@ def save_checkpoint_data(version: int, checkpoint_data: CheckpointData):
             "epoch": checkpoint_data.current_epoch,
             "steps_done": checkpoint_data.steps_done,
             "episode_score": checkpoint_data.episode_score,
+            "episode_illegal_move": checkpoint_data.episode_illegal_move,
             "memory": checkpoint_data.memory,
             "model_state_dict": checkpoint_data.model_state_dict,
             "target_state_dict": checkpoint_data.target_state_dict,
@@ -102,10 +104,18 @@ def load_checkpoint_data(
                 "with the current version configured in the Trainer."
             )
 
+    episode_score = checkpoint["episode_score"]
+    # Added later, so we need to make sure it's correctly loaded
+    episode_illegal_move = checkpoint.get("episode_illegal_move", [])
+    if len(episode_illegal_move) == 0:
+        # We're assuming it was only True
+        episode_illegal_move = [True] * len(episode_score)
+
     return CheckpointData(
         current_epoch=checkpoint["epoch"],
         steps_done=checkpoint["steps_done"],
-        episode_score=checkpoint["episode_score"],
+        episode_score=episode_score,
+        episode_illegal_move=episode_illegal_move,
         memory=checkpoint["memory"],
         model_state_dict=checkpoint["model_state_dict"],
         target_state_dict=checkpoint["target_state_dict"],
