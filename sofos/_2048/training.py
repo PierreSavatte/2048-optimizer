@@ -105,7 +105,7 @@ class Trainer:
                 dtype=torch.long,
             )
 
-    def plot_durations(self, show_result=False):
+    def plot_learning_graph(self, show_result=False):
         plt.figure(1)
         scores_t = torch.tensor(self.episode_score, dtype=torch.float)
         if show_result:
@@ -272,7 +272,7 @@ class Trainer:
 
                     if done:
                         self.episode_score.append(score)
-                        self.plot_durations()
+                        self.plot_learning_graph()
                         break
                 if i_episode % 1_000 == 0:
                     self.checkpoint(epoch=i_episode)
@@ -280,7 +280,7 @@ class Trainer:
             self.checkpoint(epoch=i_episode)
 
         print("Complete")
-        self.plot_durations(show_result=True)
+        self.plot_learning_graph(show_result=True)
         plt.ioff()
         plt.show()
 
