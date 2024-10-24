@@ -74,7 +74,7 @@ class Evaluator:
 
 
 def print_model_evaluation(policy_network_filename: str, display_gym: bool):
-    from sofos._2048.evaluate.metrics import compute_metrics, display_metrics
+    from sofos._2048.evaluation.metrics import compute_metrics, display_metrics
 
     evaluator = Evaluator(policy_network_filename, display_gym=display_gym)
     evaluation_list = evaluator.run()

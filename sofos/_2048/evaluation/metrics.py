@@ -1,7 +1,7 @@
 import statistics
 from collections import defaultdict
 
-from sofos._2048.evaluate import Evaluation
+from sofos._2048.evaluation import Evaluation
 
 Metrics = dict[str, float]
 
