@@ -69,6 +69,8 @@ class Evaluator:
                     )
                     break
 
+                state = next_state
+
         print("Evaluation completed")
         return evaluation_list
 
