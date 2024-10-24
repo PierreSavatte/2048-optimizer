@@ -26,8 +26,16 @@ def ensure_path(path):
         os.makedirs(path)
 
 
-def extract_model_version_from_filename(filename: str) -> int:
+def extract_model_version_from_training_save_filename(filename: str) -> int:
     match = re.search(r"training_save_v(\d+)_", filename)
+    if match:
+        return int(match.group(1))
+    else:
+        raise RuntimeError(f"Cannot find the version number in {filename=}.")
+
+
+def extract_model_version_from_policy_network_filename(filename: str) -> int:
+    match = re.search(r"policy_network_v(\d+)_", filename)
     if match:
         return int(match.group(1))
     else:
@@ -82,7 +90,7 @@ def load_checkpoint_data(
     )
 
     if expected_version is not None:
-        version = extract_model_version_from_filename(filename)
+        version = extract_model_version_from_training_save_filename(filename)
         if version != expected_version:
             raise RuntimeError(
                 "The version of the file you're trying to load does not match "
@@ -97,4 +105,23 @@ def load_checkpoint_data(
         model_state_dict=checkpoint["model_state_dict"],
         target_state_dict=checkpoint["target_state_dict"],
         optimizer_state_dict=checkpoint["optimizer_state_dict"],
+    )
+
+
+@dataclass
+class PolicyNetworkData:
+    version: int
+    model_state_dict: dict
+
+
+def load_policy_network_data(
+    filename: str, map_location: str
+) -> PolicyNetworkData:
+    model_state_dict = torch.load(
+        PATH_TRAINING / filename, map_location=map_location, weights_only=False
+    )
+    version = extract_model_version_from_policy_network_filename(filename)
+
+    return PolicyNetworkData(
+        version=version, model_state_dict=model_state_dict
     )
