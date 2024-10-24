@@ -115,7 +115,7 @@ class Trainer:
             plt.clf()
             plt.title("Training...")
         plt.xlabel("Episode")
-        plt.plot(scores_t.numpy(), label="Score")
+        plt.plot(scores_t.numpy(), label="Score", color="blue")
         # Take 100 episode averages and plot them too
         if len(scores_t) >= OFFICIAL_EVALUATIONS_DURATION:
             scores_means = torch.cat(
@@ -128,7 +128,19 @@ class Trainer:
                     ),
                 )
             )
-            plt.plot(scores_means.numpy(), label="Mean of scores (last 100)")
+            scores_means = scores_means.numpy()
+            plt.plot(
+                scores_means, label="Mean of scores (last 100)", color="orange"
+            )
+            last_score = round(float(scores_means[-1]), 2)
+            plt.text(
+                len(scores_t),
+                last_score,
+                str(last_score),
+                fontsize=10,
+                color="orange",
+                ha="right",
+            )
 
             illegal_move_t = torch.tensor(
                 self.episode_illegal_move, dtype=torch.int
@@ -148,6 +160,7 @@ class Trainer:
             illegal_move_percentages = illegal_move_percentages.numpy()
             plt.plot(
                 illegal_move_percentages,
+                color="green",
                 label="Percentages of illegal moves (last 100)",
             )
 
@@ -156,7 +169,8 @@ class Trainer:
                 len(scores_t),
                 last_percentage,
                 str(last_percentage),
-                fontsize=12,
+                fontsize=10,
+                color="green",
                 ha="right",
             )
         plt.legend(loc="upper left")
