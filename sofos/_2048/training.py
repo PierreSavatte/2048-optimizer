@@ -199,7 +199,9 @@ class Trainer:
 
     def load_checkpoint(self, filename: str):
         checkpoint = torch.load(
-            PATH_TRAINING / filename, map_location=self.device
+            PATH_TRAINING / filename,
+            map_location=self.device,
+            weights_only=False,
         )
 
         version = extract_model_version_from_filename(filename)
