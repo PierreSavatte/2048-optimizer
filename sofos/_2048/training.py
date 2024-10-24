@@ -24,7 +24,7 @@ from sofos.replay_memory import ReplayMemory, Transition
 # TAU is the update rate of the target network
 # LR is the learning rate of the ``AdamW`` optimizer
 BATCH_SIZE = 128
-GAMMA = 0.99
+GAMMA = 0.10
 EPS_START = 0.9
 EPS_END = 0.05
 EPS_DECAY = 1000
@@ -310,7 +310,7 @@ class Trainer:
 
 
 if __name__ == "__main__":
-    trainer = Trainer(version=2, display_gym=True)
+    trainer = Trainer(version=2, display_gym=True, save_checkpoints=True)
 
     # trainer.load_checkpoint("my_file")
 
