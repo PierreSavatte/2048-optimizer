@@ -1,10 +1,10 @@
 import statistics
 from collections import defaultdict
-from typing import Optional
+from typing import Any, Optional
 
 from sofos._2048.evaluation import EndOfTheGameReason, Evaluation
 
-Metrics = dict[str, float]
+Metrics = dict[str, Any]
 
 TilesCount = dict[int, int]
 
@@ -42,7 +42,7 @@ def compute_metrics(evaluations: list[Evaluation]) -> Metrics:
         for present_tile_value in present_tile_values_in_final_grid:
             present_tile_values[present_tile_value] += 1
 
-    metrics = {"Number of games evaluated": float(number_games_ended)}
+    metrics: Metrics = {"Number of games evaluated": float(number_games_ended)}
     for (
         tile_value,
         number_of_games_with_that_tile,
@@ -61,8 +61,10 @@ def compute_metrics(evaluations: list[Evaluation]) -> Metrics:
         number_of_games_ending_illegally / number_games_ended
     ) * 100
 
-    metrics["Mean score"] = statistics.mean(
-        [evaluation.final_score for evaluation in evaluations]
+    final_scores = [evaluation.final_score for evaluation in evaluations]
+    metrics["Mean score (± Standard Deviation)"] = (
+        f"{statistics.mean(final_scores)} "
+        f"± {round(statistics.stdev(final_scores), 2)}"
     )
 
     return metrics
