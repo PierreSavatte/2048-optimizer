@@ -1,6 +1,7 @@
 import math
 import random
 from itertools import count
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import torch
@@ -8,6 +9,11 @@ import torch.nn as nn
 import torch.optim as optim
 
 from sofos.cartpole import get_env
+from sofos.cartpole.checkpoint import (
+    CheckpointData,
+    load_checkpoint_data,
+    save_checkpoint_data,
+)
 from sofos.cartpole.neural_network import DQN
 from sofos.device import get_device
 from sofos.replay_memory import ReplayMemory, Transition
@@ -33,7 +39,9 @@ OFFICIAL_EVALUATIONS_DURATION = 100
 
 class Trainer:
 
-    def __init__(self, display_gym: bool = False):
+    def __init__(
+        self, display_gym: bool = False, save_checkpoints: bool = False
+    ):
         self.env = get_env(display_game=display_gym)
         self.device = get_device()
 
@@ -54,6 +62,8 @@ class Trainer:
         self.memory = ReplayMemory(10000)
 
         self.steps_done = 0
+        self.start_epoch = 0
+        self.save_checkpoints = save_checkpoints
 
         self.episode_durations: list[int] = []
 
@@ -163,6 +173,38 @@ class Trainer:
         torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
         self.optimizer.step()
 
+    def load_checkpoint(self, filename: str, sub_folder: Optional[str] = None):
+        data = load_checkpoint_data(
+            filename,
+            sub_folder=sub_folder,
+            map_location=self.device,
+        )
+
+        self.start_epoch = data.current_epoch
+        self.steps_done = data.steps_done
+        self.episode_durations = data.episode_durations
+        self.memory = data.memory
+
+        self.policy_net.load_state_dict(data.model_state_dict)
+        self.target_net.load_state_dict(data.target_state_dict)
+        self.optimizer.load_state_dict(data.optimizer_state_dict)
+
+    def checkpoint(self, epoch):
+        if not self.save_checkpoints:
+            return
+
+        checkpoint_data = CheckpointData(
+            current_epoch=epoch,
+            steps_done=self.steps_done,
+            episode_durations=self.episode_durations,
+            memory=self.memory,
+            model_state_dict=self.policy_net.state_dict(),
+            target_state_dict=self.target_net.state_dict(),
+            optimizer_state_dict=self.optimizer.state_dict(),
+        )
+
+        save_checkpoint_data(checkpoint_data=checkpoint_data)
+
     def run(self):
         # Enables interactive mode of matplotlib
         plt.ion()
@@ -172,50 +214,59 @@ class Trainer:
         else:
             num_episodes = 50
 
-        for i_episode in range(num_episodes):
-            # Initialize the environment and get its state
-            state, info = self.env.reset()
-            state = torch.tensor(
-                state, dtype=torch.float32, device=self.device
-            ).unsqueeze(0)
-            for t in count():
-                action = self.select_action(state)
-                observation, reward, terminated, truncated, _ = self.env.step(
-                    action.item()
-                )
-                reward = torch.tensor([reward], device=self.device)
-                done = terminated or truncated
+        i_episode = 0
+        try:
+            for i_episode in range(self.start_epoch, num_episodes):
+                # Initialize the environment and get its state
+                state, info = self.env.reset()
+                state = torch.tensor(
+                    state, dtype=torch.float32, device=self.device
+                ).unsqueeze(0)
+                for t in count():
+                    action = self.select_action(state)
+                    observation, reward, terminated, truncated, _ = (
+                        self.env.step(action.item())
+                    )
+                    reward = torch.tensor([reward], device=self.device)
+                    done = terminated or truncated
 
-                if terminated:
-                    next_state = None
-                else:
-                    next_state = torch.tensor(
-                        observation, dtype=torch.float32, device=self.device
-                    ).unsqueeze(0)
+                    if terminated:
+                        next_state = None
+                    else:
+                        next_state = torch.tensor(
+                            observation,
+                            dtype=torch.float32,
+                            device=self.device,
+                        ).unsqueeze(0)
 
-                # Store the transition in memory
-                self.memory.push(state, action, next_state, reward)
+                    # Store the transition in memory
+                    self.memory.push(state, action, next_state, reward)
 
-                # Move to the next state
-                state = next_state
+                    # Move to the next state
+                    state = next_state
 
-                # Perform one step of the optimization (on the policy network)
-                self.optimize_model()
+                    # Perform one step of the optimization
+                    # (on the policy network)
+                    self.optimize_model()
 
-                # Soft update of the target network's weights
-                # θ′ ← τ θ + (1 −τ)θ′
-                target_net_state_dict = self.target_net.state_dict()
-                policy_net_state_dict = self.policy_net.state_dict()
-                for key in policy_net_state_dict:
-                    target_net_state_dict[key] = policy_net_state_dict[
-                        key
-                    ] * TAU + target_net_state_dict[key] * (1 - TAU)
-                self.target_net.load_state_dict(target_net_state_dict)
+                    # Soft update of the target network's weights
+                    # θ′ ← τ θ + (1 −τ)θ′
+                    target_net_state_dict = self.target_net.state_dict()
+                    policy_net_state_dict = self.policy_net.state_dict()
+                    for key in policy_net_state_dict:
+                        target_net_state_dict[key] = policy_net_state_dict[
+                            key
+                        ] * TAU + target_net_state_dict[key] * (1 - TAU)
+                    self.target_net.load_state_dict(target_net_state_dict)
 
-                if done:
-                    self.episode_durations.append(t + 1)
-                    self.plot_durations()
-                    break
+                    if done:
+                        self.episode_durations.append(t + 1)
+                        self.plot_durations()
+                        break
+                if i_episode % 100 == 0:
+                    self.checkpoint(epoch=i_episode)
+        finally:
+            self.checkpoint(epoch=i_episode)
 
         print("Complete")
         self.plot_durations(show_result=True)
@@ -224,6 +275,8 @@ class Trainer:
 
 
 if __name__ == "__main__":
-    trainer = Trainer(display_gym=True)
+    trainer = Trainer(display_gym=True, save_checkpoints=True)
+
+    # trainer.load_checkpoint("<my_file>")
 
     trainer.run()
