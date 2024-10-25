@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from enum import Enum
 from typing import Optional
 
 import torch
@@ -12,10 +13,16 @@ from sofos.device import get_device
 EVALUATION_DURATION = 1_000  # Number of games played
 
 
+class EndOfTheGameReason(Enum):
+    ILLEGAL_MOVE = "ILLEGAL_MOVE"
+    BLOCKED = "BLOCKED"
+
+
 @dataclass
 class Evaluation:
     final_grid: list[list[int]]
     final_score: int
+    end_of_the_game_reason: EndOfTheGameReason
 
 
 class BaseEvaluator(ABC):
@@ -30,6 +37,16 @@ class BaseEvaluator(ABC):
     @abstractmethod
     def select_action(self, state: torch.tensor) -> torch.tensor: ...
 
+    @staticmethod
+    def get_end_of_the_game(
+        done: bool, info: dict
+    ) -> Optional[EndOfTheGameReason]:
+        if info.get("illegal_move") is True:
+            return EndOfTheGameReason.ILLEGAL_MOVE
+        if done:
+            return EndOfTheGameReason.BLOCKED
+        return None
+
     def run(self) -> list[Evaluation]:
         evaluation_list: list[Evaluation] = []
         print("Starting the evaluation...")
@@ -41,10 +58,16 @@ class BaseEvaluator(ABC):
 
                 next_state, reward, done, info = self.env.step(action)
 
-                if done or info.get("illegal_move"):
+                end_of_the_game = self.get_end_of_the_game(done, info)
+
+                if end_of_the_game is not None:
                     grid = state.squeeze().tolist()
                     evaluation_list.append(
-                        Evaluation(final_grid=grid, final_score=info["score"])
+                        Evaluation(
+                            final_grid=grid,
+                            final_score=info["score"],
+                            end_of_the_game_reason=end_of_the_game,
+                        )
                     )
                     break
 

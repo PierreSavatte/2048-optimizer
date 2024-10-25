@@ -2,7 +2,7 @@ import statistics
 from collections import defaultdict
 from typing import Optional
 
-from sofos._2048.evaluation import Evaluation
+from sofos._2048.evaluation import EndOfTheGameReason, Evaluation
 
 Metrics = dict[str, float]
 
@@ -50,6 +50,16 @@ def compute_metrics(evaluations: list[Evaluation]) -> Metrics:
         metrics[f"% of games with {tile_value}"] = (
             number_of_games_with_that_tile / number_games_ended
         ) * 100
+
+    number_of_games_ending_illegally = sum(
+        1
+        for evaluation in evaluations
+        if evaluation.end_of_the_game_reason.value
+        == EndOfTheGameReason.ILLEGAL_MOVE.value
+    )
+    metrics["% of games ending with illegal move"] = (
+        number_of_games_ending_illegally / number_games_ended
+    ) * 100
 
     metrics["Mean score"] = statistics.mean(
         [evaluation.final_score for evaluation in evaluations]
