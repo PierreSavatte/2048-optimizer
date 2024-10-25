@@ -5,6 +5,7 @@ import sys
 from typing import Optional
 
 import matplotlib
+import matplotlib.patheffects
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
@@ -135,10 +136,15 @@ class Trainer:
             last_score = round(float(scores_means[-1]), 2)
             plt.text(
                 len(scores_t),
-                last_score,
+                last_score - 10,
                 str(last_score),
                 fontsize=10,
                 color="orange",
+                path_effects=[
+                    matplotlib.patheffects.withStroke(
+                        linewidth=3, foreground="white"
+                    )
+                ],
                 ha="right",
             )
 
@@ -167,10 +173,15 @@ class Trainer:
             last_percentage = float(illegal_move_percentages[-1])
             plt.text(
                 len(scores_t),
-                last_percentage,
+                last_percentage - 10,
                 str(last_percentage),
                 fontsize=10,
                 color="green",
+                path_effects=[
+                    matplotlib.patheffects.withStroke(
+                        linewidth=3, foreground="white"
+                    )
+                ],
                 ha="right",
             )
         plt.legend(loc="upper left")
