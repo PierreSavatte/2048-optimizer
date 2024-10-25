@@ -1,6 +1,9 @@
+from functools import cache
+
 import torch
 
 
+@cache
 def get_device():
     device_name = (
         "cuda"

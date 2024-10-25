@@ -1,5 +1,6 @@
 import statistics
 from collections import defaultdict
+from typing import Optional
 
 from sofos._2048.evaluation import Evaluation
 
@@ -57,6 +58,9 @@ def compute_metrics(evaluations: list[Evaluation]) -> Metrics:
     return metrics
 
 
-def display_metrics(metrics: Metrics):
+def display_metrics(metrics: Metrics, strategy_name: Optional[str] = None):
+    if strategy_name:
+        print(f"Results for {strategy_name}:")
+
     for metric_name, metric_value in metrics.items():
         print(f"{metric_name}: {metric_value}")
