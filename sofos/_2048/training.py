@@ -136,7 +136,7 @@ class Trainer:
             last_score = round(float(scores_means[-1]), 2)
             plt.text(
                 len(scores_t),
-                last_score - 10,
+                last_score + 5,
                 str(last_score),
                 fontsize=10,
                 color="orange",
@@ -173,7 +173,7 @@ class Trainer:
             last_percentage = float(illegal_move_percentages[-1])
             plt.text(
                 len(scores_t),
-                last_percentage - 10,
+                last_percentage + 5,
                 str(last_percentage),
                 fontsize=10,
                 color="green",
